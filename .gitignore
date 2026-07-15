@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+coverage/
+.superpowers/
+.idea/
+supabase/.temp/
+.gstack/
+docs/
+mockup/
