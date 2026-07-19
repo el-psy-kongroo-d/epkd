@@ -6,7 +6,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "dev": "concurrently -k \"pnpm --filter @epkd/api dev\" \"pnpm --filter @epkd/web dev\""
+    "dev": "concurrently -k \"pnpm --filter @epkd/api dev\" \"pnpm --filter @epkd/web dev\"",
+    "post:publish": "node scripts/publish-post.mjs"
   },
   "devDependencies": { "concurrently": "^9.1.0", "gray-matter": "^4.0.3" }
 }
