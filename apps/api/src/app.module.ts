@@ -2,8 +2,9 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/c
 import { createRateLimiter } from "./common/rate-limit";
 import { PUBLISH_RATE_LIMIT } from "./config";
 import { PostsModule } from "./posts/posts.module";
+import { RssModule } from "./rss/rss.module";
 
-@Module({ imports: [PostsModule] })
+@Module({ imports: [PostsModule, RssModule] })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
