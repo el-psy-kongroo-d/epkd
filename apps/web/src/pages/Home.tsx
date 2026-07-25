@@ -1,6 +1,7 @@
 import type { PostMeta } from "@epkd/shared";
 import { Link } from "react-router-dom";
 import { DivergenceMeter } from "../components/DivergenceMeter";
+import { OssTicker } from "../components/OssTicker";
 import { SectionHead } from "../components/SectionHead";
 import { StatusLine } from "../components/StatusLine";
 import { useApi } from "../hooks/useApi";
@@ -48,6 +49,7 @@ export function Home() {
           </ul>
         )}
       </section>
+      <OssTicker />
     </>
   );
 }

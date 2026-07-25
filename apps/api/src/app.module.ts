@@ -1,10 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
 import { createRateLimiter } from "./common/rate-limit";
 import { PUBLISH_RATE_LIMIT } from "./config";
+import { OssModule } from "./oss/oss.module";
 import { PostsModule } from "./posts/posts.module";
 import { RssModule } from "./rss/rss.module";
 
-@Module({ imports: [PostsModule, RssModule] })
+@Module({ imports: [PostsModule, RssModule, OssModule] })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
