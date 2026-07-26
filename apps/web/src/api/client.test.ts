@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiClientError, apiGet } from "./client";
+import { ApiClientError, apiDelete, apiGet } from "./client";
 
 const jsonResponse = (body: unknown) => ({ json: () => Promise.resolve(body) }) as Response;
 
@@ -20,6 +20,15 @@ describe("apiGet", () => {
     );
     await expect(apiGet("/api/posts/x")).rejects.toMatchObject({ code: "POST_NOT_FOUND" });
     await expect(apiGet("/api/posts/x")).rejects.toBeInstanceOf(ApiClientError);
+  });
+
+  it("204 No Content(빈 본문) → 성공(undefined), json() 파싱 시도 안 함", async () => {
+    const json = vi.fn().mockRejectedValue(new Error("should not be called on empty body"));
+    const res = { status: 204, headers: { get: () => null }, json } as unknown as Response;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(res));
+
+    await expect(apiDelete("/api/comments/1", { password: "x" })).resolves.toBeUndefined();
+    expect(json).not.toHaveBeenCalled();
   });
 
   it("200인데 non-JSON(파싱 실패) 본문 → ApiClientError(INTERNAL)로 표면화 — 조용히 성공 처리하지 않는다", async () => {

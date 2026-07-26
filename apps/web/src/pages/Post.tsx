@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import type { PostDetail, PostMeta } from "@epkd/shared";
 import { ErrorCode, SITE_NAME } from "@epkd/shared";
 import { Link, useParams } from "react-router-dom";
+import { Comments } from "../components/Comments";
 import { Pager } from "../components/Pager";
 import { StatusLine } from "../components/StatusLine";
 import { useApi } from "../hooks/useApi";
@@ -40,6 +41,7 @@ export function Post() {
       </div>
       <div className="post-body" dangerouslySetInnerHTML={{ __html: post.html }} />
       <Pager older={older} newer={newer} />
+      <Comments slug={post.slug} />
     </article>
   );
 }
