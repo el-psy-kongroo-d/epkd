@@ -3,10 +3,11 @@ import { CommentsModule } from "./comments/comments.module";
 import { createRateLimiter } from "./common/rate-limit";
 import { COMMENT_RATE_LIMIT, PUBLISH_RATE_LIMIT } from "./config";
 import { OssModule } from "./oss/oss.module";
+import { PagesModule } from "./pages/pages.module";
 import { PostsModule } from "./posts/posts.module";
 import { RssModule } from "./rss/rss.module";
 
-@Module({ imports: [PostsModule, RssModule, CommentsModule, OssModule] })
+@Module({ imports: [PostsModule, RssModule, CommentsModule, OssModule, PagesModule] })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
