@@ -28,9 +28,31 @@ async function unwrap<T>(res: Response): Promise<T> {
   return body.data;
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+const CACHE_TTL_MS = 60_000;
+const cache = new Map<string, { at: number; data: unknown }>();
+
+function isCacheable(path: string): boolean {
+  return path === "/api/posts" || /^\/api\/posts\/[^/]+$/.test(path);
+}
+
+export function invalidate(path?: string): void {
+  if (path === undefined) {
+    cache.clear();
+    return;
+  }
+  cache.delete(path);
+}
+
+export async function apiGet<T>(path: string, opts?: { revalidate?: boolean }): Promise<T> {
+  const cacheable = isCacheable(path);
+  if (cacheable && !opts?.revalidate) {
+    const hit = cache.get(path);
+    if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.data as T;
+  }
   const res = await fetch(path);
-  return unwrap<T>(res);
+  const data = await unwrap<T>(res);
+  if (cacheable) cache.set(path, { at: Date.now(), data });
+  return data;
 }
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {

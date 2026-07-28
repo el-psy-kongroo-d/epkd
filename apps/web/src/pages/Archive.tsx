@@ -1,6 +1,7 @@
 import type { PostMeta } from "@epkd/shared";
 import { Link, useSearchParams } from "react-router-dom";
 import { SectionHead } from "../components/SectionHead";
+import { ArchiveSkeleton } from "../components/Skeleton";
 import { StatusLine } from "../components/StatusLine";
 import { useApi } from "../hooks/useApi";
 import { ARCHIVE_PAGE_SIZE, ROUTES } from "../lib/constants";
@@ -13,7 +14,7 @@ export function Archive() {
     return (
       <section className="section">
         <SectionHead title="Archive" />
-        <StatusLine>loading…</StatusLine>
+        <ArchiveSkeleton />
       </section>
     );
   }

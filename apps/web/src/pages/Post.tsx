@@ -4,6 +4,7 @@ import { ErrorCode, SITE_NAME } from "@epkd/shared";
 import { Link, useParams } from "react-router-dom";
 import { Comments } from "../components/Comments";
 import { Pager } from "../components/Pager";
+import { PostSkeleton } from "../components/Skeleton";
 import { StatusLine } from "../components/StatusLine";
 import { useApi } from "../hooks/useApi";
 import { ROUTES, readingTime } from "../lib/constants";
@@ -23,7 +24,7 @@ export function Post() {
 
   if (error === ErrorCode.POST_NOT_FOUND || error === ErrorCode.NOT_FOUND) return <NotFound />;
   if (error) return <StatusLine>failed to load this entry.</StatusLine>;
-  if (!post) return <StatusLine>loading…</StatusLine>;
+  if (!post) return <PostSkeleton />;
 
   const sortedAsc = posts ? [...posts].sort((a, b) => a.no - b.no) : [];
   const index = sortedAsc.findIndex((p) => p.slug === post.slug);

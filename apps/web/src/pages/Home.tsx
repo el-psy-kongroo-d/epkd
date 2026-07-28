@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { DivergenceMeter } from "../components/DivergenceMeter";
 import { OssTicker } from "../components/OssTicker";
 import { SectionHead } from "../components/SectionHead";
+import { EntriesSkeleton } from "../components/Skeleton";
 import { StatusLine } from "../components/StatusLine";
 import { useApi } from "../hooks/useApi";
 import { HOME_ENTRY_COUNT, ROUTES, readingTime } from "../lib/constants";
@@ -29,7 +30,7 @@ export function Home() {
           }
         />
         {error && <StatusLine>failed to load entries. try again later.</StatusLine>}
-        {!error && !posts && <StatusLine>loading…</StatusLine>}
+        {!error && !posts && <EntriesSkeleton />}
         {!error && posts && (
           <ul className="entries">
             {posts.slice(0, HOME_ENTRY_COUNT).map((p) => (
