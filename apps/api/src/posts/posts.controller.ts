@@ -42,4 +42,10 @@ export class PostsController {
   async remove(@Param("slug") slug: string): Promise<void> {
     await this.postsService.delete(slug);
   }
+
+  @Post(":slug/view")
+  @HttpCode(204)
+  async view(@Param("slug") slug: string): Promise<void> {
+    await this.postsService.recordView(slug);
+  }
 }

@@ -9,6 +9,7 @@ const raw = (slug: string, content: string): RawPost => ({
   slug,
   title: "t",
   date: "2026-07-28",
+  views: 0,
   readingMinutes: 1,
   excerpt: "e",
   content,

@@ -18,10 +18,16 @@ export class InMemoryPostsRepository {
   }
 
   async upsert(post: PublishPostInput): Promise<void> {
-    this.rows.set(post.slug, { slug: post.slug, title: post.title, date: post.date, content: post.content });
+    const views = this.rows.get(post.slug)?.views ?? 0;
+    this.rows.set(post.slug, { slug: post.slug, title: post.title, date: post.date, content: post.content, views });
   }
 
   async deleteBySlug(slug: string): Promise<boolean> {
     return this.rows.delete(slug);
+  }
+
+  async incrementViews(slug: string): Promise<void> {
+    const row = this.rows.get(slug);
+    if (row) row.views = (row.views ?? 0) + 1;
   }
 }

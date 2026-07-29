@@ -6,6 +6,7 @@ export interface RawPost {
   readingMinutes: number;
   excerpt: string;
   content: string;
+  views: number;
 }
 
 export interface PostInput {
@@ -13,6 +14,7 @@ export interface PostInput {
   title: string;
   date: string;
   content: string;
+  views?: number;
 }
 
 const WORDS_PER_MINUTE = 200;
@@ -47,6 +49,7 @@ export function deriveRawPosts(inputs: PostInput[]): RawPost[] {
     title: p.title,
     date: p.date,
     content: p.content,
+    views: p.views ?? 0,
     readingMinutes: toReadingMinutes(p.content),
     excerpt: toExcerpt(p.content),
   }));

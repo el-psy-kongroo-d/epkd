@@ -14,7 +14,7 @@ export class PostsService {
 
   constructor(
     @Inject(PostsRepository) private readonly repository: PostsRepository,
-    @Inject(MarkdownRenderer) private readonly renderer: MarkdownRenderer,
+    private readonly renderer: MarkdownRenderer,
   ) {}
 
   async list(): Promise<PostMeta[]> {
@@ -46,5 +46,11 @@ export class PostsService {
     const deleted = await this.repository.deleteBySlug(slug);
     if (!deleted) throw new AppException(ErrorCode.POST_NOT_FOUND, 404, `entry not found: ${slug}`);
     this.renderCache.delete(slug);
+  }
+
+  async recordView(slug: string): Promise<void> {
+    const post = await this.repository.findBySlug(slug);
+    if (!post) throw new AppException(ErrorCode.POST_NOT_FOUND, 404, `entry not found: ${slug}`);
+    await this.repository.incrementViews(slug);
   }
 }

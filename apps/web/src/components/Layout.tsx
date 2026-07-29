@@ -1,6 +1,8 @@
 import { COPYRIGHT_YEAR, GITHUB_HANDLE, GITHUB_URL, SITE_NAME } from "@epkd/shared";
 import { NavLink, Outlet } from "react-router-dom";
 import { ROUTES } from "../lib/constants";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { VisitCounter } from "./VisitCounter";
 
 export function Layout() {
   return (
@@ -17,13 +19,16 @@ export function Layout() {
         </nav>
       </header>
       <main>
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <footer className="footer">
         <span>
           © {COPYRIGHT_YEAR} · written by <a href={GITHUB_URL}>@{GITHUB_HANDLE}</a>
         </span>
-        <span>
+        <span className="footer-right">
+          <VisitCounter />
           <a href="/rss.xml">rss</a>
         </span>
       </footer>

@@ -47,4 +47,20 @@ describe("Posts API", () => {
   it("불량 slug(대문자) → 404 POST_NOT_FOUND (경로조작 차단)", async () => {
     await request(app.getHttpServer()).get("/api/posts/NoPe").expect(404);
   });
+
+  it("POST /api/posts/:slug/view → 204, 조회수 1 증가", async () => {
+    const before = await request(app.getHttpServer()).get("/api/posts/first").expect(200);
+    await request(app.getHttpServer()).post("/api/posts/first/view").expect(204);
+    const after = await request(app.getHttpServer()).get("/api/posts/first").expect(200);
+    expect(after.body.data.views).toBe(before.body.data.views + 1);
+  });
+
+  it("미존재 slug의 view → 404, 인증 없이도 카운트 외 부작용 없음", async () => {
+    const res = await request(app.getHttpServer()).post("/api/posts/ghost/view").expect(404);
+    expect(res.body.error.code).toBe("POST_NOT_FOUND");
+  });
+
+  it("불량 slug의 view → 404 (경로조작 차단)", async () => {
+    await request(app.getHttpServer()).post("/api/posts/NoPe/view").expect(404);
+  });
 });

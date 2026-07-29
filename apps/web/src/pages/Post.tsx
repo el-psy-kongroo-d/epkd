@@ -1,25 +1,29 @@
-import { useEffect } from "react";
 import type { PostDetail, PostMeta } from "@epkd/shared";
 import { ErrorCode, SITE_NAME } from "@epkd/shared";
+import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Comments } from "../components/Comments";
 import { Pager } from "../components/Pager";
 import { PostSkeleton } from "../components/Skeleton";
 import { StatusLine } from "../components/StatusLine";
 import { useApi } from "../hooks/useApi";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 import { ROUTES, readingTime } from "../lib/constants";
+import { storageGet, storageSet } from "../lib/safe-storage";
 import { NotFound } from "./NotFound";
 
 export function Post() {
   const { slug = "" } = useParams();
   const { data: post, error } = useApi<PostDetail>(`/api/posts/${slug}`);
   const { data: posts } = useApi<PostMeta[]>("/api/posts");
+  useDocumentMeta(post ? `${post.title} · ${SITE_NAME}` : SITE_NAME);
 
   useEffect(() => {
-    if (post) document.title = `${post.title} · ${SITE_NAME}`;
-    return () => {
-      document.title = SITE_NAME;
-    };
+    if (!post) return;
+    const key = `epkd-viewed:${post.slug}`;
+    if (storageGet("session", key)) return;
+    storageSet("session", key, "1");
+    fetch(`/api/posts/${post.slug}/view`, { method: "POST" }).catch(() => {});
   }, [post]);
 
   if (error === ErrorCode.POST_NOT_FOUND || error === ErrorCode.NOT_FOUND) return <NotFound />;
@@ -38,7 +42,7 @@ export function Post() {
       </Link>
       <h1 className="post-title">{post.title}</h1>
       <div className="post-meta">
-        no.{post.no} · {post.date} · {readingTime(post.readingMinutes)}
+        no.{post.no} · {post.date} · {readingTime(post.readingMinutes)} · {post.views.toLocaleString()} views
       </div>
       <div className="post-body" dangerouslySetInnerHTML={{ __html: post.html }} />
       <Pager older={older} newer={newer} />

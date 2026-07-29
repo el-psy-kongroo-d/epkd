@@ -1,17 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ErrorCode, SLUG_REGEX } from "@epkd/shared";
 import { AppException } from "../common/app.exception";
+import type { Database } from "../supabase/database.types";
 import { SupabaseService } from "../supabase/supabase.service";
 import { deriveRawPosts, normalizeDate, type PostInput, type RawPost } from "./post-derive";
 import { PostsRepository, type PublishPostInput } from "./posts.repository";
 
-interface PostRow {
-  slug: string;
-  title: string;
-  date: string;
-  content: string;
-  updated_at: string;
-}
+type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 
 const INTERNAL_ERROR_MESSAGE = "internal error";
 const CACHE_TTL_MS = 30_000;
@@ -65,7 +60,13 @@ export class SupabasePostsRepository extends PostsRepository {
         this.logger.warn(`skip (bad row): ${row.slug}`);
         continue;
       }
-      inputs.push({ slug: row.slug, title, date, content: row.content });
+      inputs.push({
+        slug: row.slug,
+        title,
+        date,
+        content: row.content,
+        views: typeof row.views === "number" ? row.views : 0,
+      });
     }
 
     const posts = deriveRawPosts(inputs);
@@ -92,5 +93,10 @@ export class SupabasePostsRepository extends PostsRepository {
     if (error) this.fail("deleteBySlug", error.message);
     this.invalidate();
     return (data?.length ?? 0) > 0;
+  }
+
+  async incrementViews(slug: string): Promise<void> {
+    const { error } = await this.supabase.client.rpc("increment_post_views", { post_slug: slug });
+    if (error) this.fail("incrementViews", error.message);
   }
 }

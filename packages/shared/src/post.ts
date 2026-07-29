@@ -10,7 +10,13 @@ export const PostMetaSchema = z.object({
   date: z.string().regex(DATE_REGEX),
   readingMinutes: z.number().int().positive(),
   excerpt: z.string(),
+  views: z.number().int().nonnegative(),
 });
+
+export const SiteStatsSchema = z.object({
+  totalVisits: z.number().int().nonnegative(),
+});
+export type SiteStats = z.infer<typeof SiteStatsSchema>;
 export type PostMeta = z.infer<typeof PostMetaSchema>;
 
 export const PostDetailSchema = PostMetaSchema.extend({ html: z.string() });

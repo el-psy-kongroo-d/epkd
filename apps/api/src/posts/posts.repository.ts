@@ -12,4 +12,5 @@ export abstract class PostsRepository {
   abstract findBySlug(slug: string): Promise<RawPost | null>;
   abstract upsert(post: PublishPostInput): Promise<void>;
   abstract deleteBySlug(slug: string): Promise<boolean>;
+  abstract incrementViews(slug: string): Promise<void>;
 }

@@ -55,7 +55,7 @@ describe("SupabasePostsRepository", () => {
     it("30초 TTL 동안은 재조회 없이 캐시를 재사용한다", async () => {
       const rows = [row("a", "A", "2026-07-01", "x")];
       const client = fakeSupabaseServiceReturning(null, rows);
-      const fromSpy = vi.spyOn(client.client as { from: () => unknown }, "from");
+      const fromSpy = vi.spyOn(client.client as unknown as { from: () => unknown }, "from");
       const repo = new SupabasePostsRepository(client);
 
       let now = 1_000_000;
@@ -143,10 +143,7 @@ describe("SupabasePostsRepository", () => {
   describe("upsert", () => {
     it("성공 시 캐시를 무효화해 다음 loadAll이 다시 조회하게 한다", async () => {
       let call = 0;
-      const rows = [
-        [row("a", "A", "2026-07-01", "x")],
-        [row("a", "A2", "2026-07-01", "y")],
-      ];
+      const rows = [[row("a", "A", "2026-07-01", "x")], [row("a", "A2", "2026-07-01", "y")]];
       const builder = {
         from: () => builder,
         select: () => builder,
@@ -169,9 +166,11 @@ describe("SupabasePostsRepository", () => {
 
     it("Supabase 에러 → 원문 노출 없이 'internal error'", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
-      await expect(
-        repo.upsert({ slug: "a", title: "A", date: "2026-07-01", content: "x" }),
-      ).rejects.toMatchObject({ code: ErrorCode.INTERNAL, status: 500, message: "internal error" });
+      await expect(repo.upsert({ slug: "a", title: "A", date: "2026-07-01", content: "x" })).rejects.toMatchObject({
+        code: ErrorCode.INTERNAL,
+        status: 500,
+        message: "internal error",
+      });
     });
   });
 
