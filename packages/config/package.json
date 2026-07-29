@@ -1,1 +1,5 @@
-{ "name": "@epkd/config", "version": "0.0.0", "private": true }
+{
+  "name": "@epkd/config",
+  "version": "0.0.0",
+  "private": true
+}

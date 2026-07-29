@@ -4,7 +4,8 @@ import { OssService } from "./oss.service";
 const searchResponse = (items: Array<{ repository_url: string }>): Response =>
   ({ ok: true, status: 200, json: () => Promise.resolve({ items }) }) as Response;
 
-const errorResponse = (status: number): Response => ({ ok: false, status, json: () => Promise.resolve({}) }) as Response;
+const errorResponse = (status: number): Response =>
+  ({ ok: false, status, json: () => Promise.resolve({}) }) as Response;
 
 describe("OssService", () => {
   let service: OssService;
@@ -19,13 +20,15 @@ describe("OssService", () => {
   });
 
   it("search items의 repository_url에서 fullName을 뽑아 PR 수를 집계하고 fullName 순 정렬한다", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      searchResponse([
-        { repository_url: "https://api.github.com/repos/nestjs/nest" },
-        { repository_url: "https://api.github.com/repos/nestjs/nest" },
-        { repository_url: "https://api.github.com/repos/vitejs/vite" },
-      ]),
-    );
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        searchResponse([
+          { repository_url: "https://api.github.com/repos/nestjs/nest" },
+          { repository_url: "https://api.github.com/repos/nestjs/nest" },
+          { repository_url: "https://api.github.com/repos/vitejs/vite" },
+        ]),
+      );
 
     const repos = await service.getRepos();
 

@@ -28,9 +28,9 @@ describe("GET /rss.xml", () => {
   it("RSS 2.0 XML + 특수문자 이스케이프 + 엔벨로프 미적용", async () => {
     const res = await request(app.getHttpServer()).get("/rss.xml").expect(200);
     expect(res.headers["content-type"]).toContain("application/rss+xml");
-    expect(res.text).toContain("<rss version=\"2.0\">");
+    expect(res.text).toContain('<rss version="2.0">');
     expect(res.text).toContain("Tom &amp; Jerry &lt;3");
     expect(res.text).toContain("https://epkd.example/posts/amp-title");
-    expect(res.text).not.toContain("\"data\"");
+    expect(res.text).not.toContain('"data"');
   });
 });

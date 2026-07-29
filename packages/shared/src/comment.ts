@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SLUG_REGEX } from "./post";
+import { SLUG_REGEX } from "./post.js";
 
 export const CommentSchema = z.object({
   id: z.number().int().positive(),
