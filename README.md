@@ -1,9 +1,9 @@
 # epkd
 
-A minimal, document-style weblog. Posts are written as local Markdown files and published
-to Supabase through a CLI; a NestJS API renders and serves them, and a React front end
-displays them. The API also injects SSR-lite HTML (title/OG/canonical/JSON-LD and the
-rendered article body) so crawlers see real content without a full SSR framework.
+Personal blog. Posts are written as local Markdown files and published to Supabase
+through a CLI; a NestJS API renders and serves them, and a React front end displays
+them. The API injects SSR-lite HTML (title/OG/canonical/JSON-LD and the rendered
+article body) so crawlers see real content without a full SSR framework.
 
 ## Stack
 
@@ -32,15 +32,17 @@ date: 2026-07-28
 body...
 ```
 
-Publish against a running API (local or prod):
+Manage posts against a running API (local or prod) with the `blog` CLI:
 
 ```sh
-PUBLISH_TOKEN=... API_BASE_URL=http://localhost:3000 pnpm post:publish slug-like-this.md
+export PUBLISH_TOKEN=...           # API_BASE_URL defaults to http://localhost:3000
+pnpm blog publish slug-like-this.md
+pnpm blog delete slug-like-this
+pnpm blog list
 ```
 
 - The file name becomes the slug (`[a-z0-9-]` only).
 - `draft: true` in frontmatter refuses to publish.
-- Remove a post: `pnpm post:publish --delete slug-like-this`
 - Equivalent raw API: `POST` / `DELETE /api/posts` with `Authorization: Bearer $PUBLISH_TOKEN`.
 
 Comments (anonymous nickname + delete password) are written from the web UI via
@@ -67,7 +69,12 @@ Unknown slugs return a real HTTP 404.
 
 ## Test & build
 
+`packages/shared` ships a dual build — CommonJS for the Nest api, ESM for the Vite web app —
+and is consumed from its `dist/`, so build once before the first test run on a fresh clone
+(`pnpm dev` builds it for you):
+
 ```sh
-pnpm test
 pnpm build
+pnpm typecheck
+pnpm test
 ```
