@@ -1,7 +1,9 @@
+import { Injectable } from "@nestjs/common";
 import { loadEsm } from "../common/esm";
 
 type Processor = { process(input: string): Promise<{ toString(): string }> };
 
+@Injectable()
 export class MarkdownRenderer {
   private processorPromise: Promise<Processor> | null = null;
 

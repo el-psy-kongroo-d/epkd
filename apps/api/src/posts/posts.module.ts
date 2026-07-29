@@ -11,7 +11,7 @@ import { SupabasePostsRepository } from "./supabase-posts.repository";
   providers: [
     SupabaseService,
     { provide: PostsRepository, useClass: SupabasePostsRepository },
-    { provide: MarkdownRenderer, useValue: new MarkdownRenderer() },
+    MarkdownRenderer,
     PostsService,
   ],
   exports: [PostsService],
