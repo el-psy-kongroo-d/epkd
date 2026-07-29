@@ -1,23 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ErrorCode } from "@epkd/shared";
 import { AppException } from "../common/app.exception";
+import type { Database } from "../supabase/database.types";
 import { SupabaseService } from "../supabase/supabase.service";
 
-export interface CommentRow {
-  id: number;
-  post_slug: string;
-  nickname: string;
-  password_hash: string;
-  body: string;
-  created_at: string;
-}
-
-export interface NewCommentRow {
-  post_slug: string;
-  nickname: string;
-  password_hash: string;
-  body: string;
-}
+export type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
+export type NewCommentRow = Omit<Database["public"]["Tables"]["comments"]["Insert"], "id" | "created_at">;
 
 const INTERNAL_ERROR_MESSAGE = "internal error";
 
@@ -37,7 +25,8 @@ export class CommentsRepository {
       .from("comments")
       .select("*")
       .eq("post_slug", slug)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true });
     if (error) this.fail("listBySlug", error.message);
     return data ?? [];
   }

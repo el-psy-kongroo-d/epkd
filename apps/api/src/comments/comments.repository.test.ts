@@ -12,7 +12,7 @@ function fakeSupabaseServiceReturning(error: { message: string } | null, data: u
     insert: () => builder,
     delete: () => builder,
     eq: () => builder,
-    order: () => Promise.resolve({ data, error }),
+    order: () => builder,
     single: () => Promise.resolve({ data, error }),
     maybeSingle: () => Promise.resolve({ data, error }),
     then: (resolve: (v: { data: unknown; error: unknown }) => unknown) => resolve({ data, error }),
@@ -53,12 +53,20 @@ describe("CommentsRepository — Supabase 에러 처리", () => {
 
   it("findById: 원문 에러 노출 없이 고정 메시지", async () => {
     const repo = new CommentsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
-    await expect(repo.findById(1)).rejects.toMatchObject({ code: ErrorCode.INTERNAL, status: 500, message: "internal error" });
+    await expect(repo.findById(1)).rejects.toMatchObject({
+      code: ErrorCode.INTERNAL,
+      status: 500,
+      message: "internal error",
+    });
   });
 
   it("deleteById: 원문 에러 노출 없이 고정 메시지", async () => {
     const repo = new CommentsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
-    await expect(repo.deleteById(1)).rejects.toMatchObject({ code: ErrorCode.INTERNAL, status: 500, message: "internal error" });
+    await expect(repo.deleteById(1)).rejects.toMatchObject({
+      code: ErrorCode.INTERNAL,
+      status: 500,
+      message: "internal error",
+    });
   });
 
   it("에러 없음 → 정상적으로 데이터 반환", async () => {
