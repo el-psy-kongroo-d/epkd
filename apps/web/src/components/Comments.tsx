@@ -35,6 +35,9 @@ export function Comments({ slug }: { slug: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const refetch = useCallback(() => {
     apiGet<Comment[]>(`/api/posts/${slug}/comments`)
@@ -64,16 +67,31 @@ export function Comments({ slug }: { slug: string }) {
     }
   }
 
-  async function handleDelete(id: number) {
-    const password = window.prompt("password?");
-    if (!password) return;
+  function openDelete(id: number) {
+    setDeletingId((current) => (current === id ? null : id));
+    setDeletePassword("");
     setDeleteError(null);
+  }
+
+  function cancelDelete() {
+    setDeletingId(null);
+    setDeletePassword("");
+    setDeleteError(null);
+  }
+
+  async function handleDelete(e: React.FormEvent, id: number) {
+    e.preventDefault();
+    setDeleteError(null);
+    setDeleting(true);
     try {
-      await apiDelete(`/api/comments/${id}`, { password });
+      await apiDelete(`/api/comments/${id}`, { password: deletePassword });
+      cancelDelete();
       refetch();
-    } catch (e) {
-      const code = codeOf(e);
+    } catch (err) {
+      const code = codeOf(err);
       setDeleteError(code === ErrorCode.FORBIDDEN ? "wrong password." : friendlyError(code));
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -94,21 +112,50 @@ export function Comments({ slug }: { slug: string }) {
               <div className="comment-meta">
                 <span className="comment-nickname">{c.nickname}</span>
                 <span className="comment-date">{formatDate(c.createdAt)}</span>
-                <button type="button" className="comment-delete" onClick={() => handleDelete(c.id)}>
+                <button
+                  type="button"
+                  className="comment-delete"
+                  aria-expanded={deletingId === c.id}
+                  onClick={() => openDelete(c.id)}
+                >
                   delete
                 </button>
               </div>
               <p className="comment-body">{c.body}</p>
+              {deletingId === c.id && (
+                <form className="comment-delete-form" onSubmit={(e) => handleDelete(e, c.id)}>
+                  <label className="sr-only" htmlFor={`delete-password-${c.id}`}>
+                    password for this comment
+                  </label>
+                  <input
+                    id={`delete-password-${c.id}`}
+                    type="password"
+                    placeholder="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    required
+                  />
+                  <button type="submit" disabled={deleting || !deletePassword}>
+                    {deleting ? "deleting…" : "confirm"}
+                  </button>
+                  <button type="button" className="comment-delete-cancel" onClick={cancelDelete}>
+                    cancel
+                  </button>
+                  {deleteError && <span className="comment-delete-error">{deleteError}</span>}
+                </form>
+              )}
             </li>
           ))}
         </ul>
       )}
 
-      {deleteError && <StatusLine>{deleteError}</StatusLine>}
-
       <form className="comment-form" onSubmit={handleSubmit}>
         <div className="comment-form-row">
+          <label className="sr-only" htmlFor="comment-nickname">
+            nickname
+          </label>
           <input
+            id="comment-nickname"
             type="text"
             placeholder="nickname"
             value={form.nickname}
@@ -116,7 +163,11 @@ export function Comments({ slug }: { slug: string }) {
             maxLength={24}
             required
           />
+          <label className="sr-only" htmlFor="comment-password">
+            password
+          </label>
           <input
+            id="comment-password"
             type="password"
             placeholder="password"
             value={form.password}
@@ -126,7 +177,11 @@ export function Comments({ slug }: { slug: string }) {
             required
           />
         </div>
+        <label className="sr-only" htmlFor="comment-body">
+          comment
+        </label>
         <textarea
+          id="comment-body"
           placeholder="write a comment…"
           value={form.body}
           onChange={(e) => setForm({ ...form, body: e.target.value })}
@@ -146,14 +201,14 @@ export function Comments({ slug }: { slug: string }) {
             />
           </label>
         </div>
-        <p className="comment-privacy">
-          Your nickname and comment are stored; the password is kept only as a hash for deletion. No email or IP is
-          collected.
-        </p>
         {submitError && <StatusLine>{submitError}</StatusLine>}
         <button type="submit" disabled={submitting}>
           {submitting ? "posting…" : "post comment"}
         </button>
+        <p className="comment-privacy">
+          Your nickname and comment are stored; the password is kept only as a hash for deletion. No email or IP is
+          collected.
+        </p>
       </form>
     </section>
   );

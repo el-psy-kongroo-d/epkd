@@ -40,9 +40,7 @@ describe("Comments", () => {
 
     const fetchMock2 = vi
       .fn()
-      .mockResolvedValue(
-        jsonResponse({ data: [comment(1, "rintarou", "a"), comment(2, "kurisu", "b")] }),
-      );
+      .mockResolvedValue(jsonResponse({ data: [comment(1, "rintarou", "a"), comment(2, "kurisu", "b")] }));
     vi.stubGlobal("fetch", fetchMock2);
     render(<Comments slug="steins-gate" />);
     expect(await screen.findByText("2 comments")).toBeTruthy();
@@ -51,15 +49,23 @@ describe("Comments", () => {
   it("작성 폼에 개인정보 안내 문구를 표시한다", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ data: [] })));
     render(<Comments slug="steins-gate" />);
-    expect(
-      screen.getByText(/the password is kept only as a hash for deletion/i),
-    ).toBeTruthy();
+    expect(screen.getByText(/the password is kept only as a hash for deletion/i)).toBeTruthy();
   });
 
   it("작성 폼 submit 시 POST payload(빈 website 포함)를 보내고 성공 후 목록을 재조회한다", async () => {
-    const fetchMock = vi.fn().mockImplementation((path: string, init?: RequestInit) => {
+    const fetchMock = vi.fn().mockImplementation((_path: string, init?: RequestInit) => {
       if (!init) return Promise.resolve(jsonResponse({ data: [] }));
-      return Promise.resolve(jsonResponse({ data: { id: 2, postSlug: "steins-gate", nickname: "kurisu", body: "tuturu", createdAt: "2026-07-20T03:05:00.000Z" } }));
+      return Promise.resolve(
+        jsonResponse({
+          data: {
+            id: 2,
+            postSlug: "steins-gate",
+            nickname: "kurisu",
+            body: "tuturu",
+            createdAt: "2026-07-20T03:05:00.000Z",
+          },
+        }),
+      );
     });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -85,5 +91,42 @@ describe("Comments", () => {
     await waitFor(() => expect(getCalls.length).toBeGreaterThanOrEqual(2));
 
     expect((screen.getByPlaceholderText("nickname") as HTMLInputElement).value).toBe("");
+  });
+
+  it("delete를 누르면 인라인 비밀번호 폼이 열리고, confirm 시 DELETE를 보낸다", async () => {
+    const fetchMock = vi.fn().mockImplementation((_path: string, init?: RequestInit) => {
+      if (init?.method === "DELETE") return Promise.resolve(jsonResponse({ data: null }));
+      return Promise.resolve(jsonResponse({ data: [comment(1, "rintarou", "el psy kongroo")] }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<Comments slug="steins-gate" />);
+    fireEvent.click(await screen.findByRole("button", { name: /delete/i }));
+
+    const passwordInput = screen.getByLabelText(/password for this comment/i);
+    fireEvent.change(passwordInput, { target: { value: "hunchentoot1" } });
+    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/comments/1",
+        expect.objectContaining({ method: "DELETE", body: JSON.stringify({ password: "hunchentoot1" }) }),
+      ),
+    );
+    await waitFor(() => expect(screen.queryByLabelText(/password for this comment/i)).toBeNull());
+  });
+
+  it("cancel을 누르면 삭제 폼이 닫힌다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(jsonResponse({ data: [comment(1, "rintarou", "el psy kongroo")] })),
+    );
+
+    render(<Comments slug="steins-gate" />);
+    fireEvent.click(await screen.findByRole("button", { name: /delete/i }));
+    expect(screen.getByLabelText(/password for this comment/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+    expect(screen.queryByLabelText(/password for this comment/i)).toBeNull();
   });
 });
