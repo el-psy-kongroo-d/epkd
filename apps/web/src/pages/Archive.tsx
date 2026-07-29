@@ -1,14 +1,17 @@
 import type { PostMeta } from "@epkd/shared";
+import { SITE_NAME } from "@epkd/shared";
 import { Link, useSearchParams } from "react-router-dom";
 import { SectionHead } from "../components/SectionHead";
 import { ArchiveSkeleton } from "../components/Skeleton";
 import { StatusLine } from "../components/StatusLine";
 import { useApi } from "../hooks/useApi";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 import { ARCHIVE_PAGE_SIZE, ROUTES } from "../lib/constants";
 
 export function Archive() {
   const { data: posts, error } = useApi<PostMeta[]>("/api/posts");
   const [params, setParams] = useSearchParams();
+  useDocumentMeta(`Archive · ${SITE_NAME}`);
   if (error) return <StatusLine>failed to load the archive.</StatusLine>;
   if (!posts) {
     return (

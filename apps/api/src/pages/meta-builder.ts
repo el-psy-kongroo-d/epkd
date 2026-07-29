@@ -7,6 +7,7 @@ export interface PageMeta {
   description: string;
   canonical: string;
   ogType?: string;
+  publishedTime?: string;
   jsonLd?: unknown;
 }
 
@@ -14,21 +15,34 @@ export function baseUrl(): string {
   return process.env.BASE_URL ?? DEFAULT_BASE_URL;
 }
 
+function ogImageUrl(): string {
+  return `${baseUrl()}/og.png`;
+}
+
 export function renderHead(meta: PageMeta): string {
   const title = escapeHtml(meta.title);
   const description = escapeHtml(meta.description);
   const canonical = escapeHtml(meta.canonical);
   const ogType = meta.ogType ?? "website";
+  const image = escapeHtml(ogImageUrl());
   const lines = [
     `<title>${title}</title>`,
     `<meta name="description" content="${description}">`,
     `<link rel="canonical" href="${canonical}">`,
+    `<meta property="og:site_name" content="${SITE_NAME}">`,
     `<meta property="og:title" content="${title}">`,
     `<meta property="og:type" content="${ogType}">`,
     `<meta property="og:url" content="${canonical}">`,
     `<meta property="og:description" content="${description}">`,
-    `<meta name="twitter:card" content="summary">`,
+    `<meta property="og:image" content="${image}">`,
+    `<meta property="og:image:width" content="1200">`,
+    `<meta property="og:image:height" content="630">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta name="twitter:image" content="${image}">`,
   ];
+  if (meta.publishedTime) {
+    lines.push(`<meta property="article:published_time" content="${escapeHtml(meta.publishedTime)}">`);
+  }
   if (meta.jsonLd !== undefined) {
     const json = JSON.stringify(meta.jsonLd).replace(/</g, "\\u003c");
     lines.push(`<script type="application/ld+json">${json}</script>`);
@@ -37,7 +51,18 @@ export function renderHead(meta: PageMeta): string {
 }
 
 export function siteMeta(path: string): PageMeta {
-  return { title: SITE_NAME, description: SITE_DESCRIPTION, canonical: `${baseUrl()}${path}` };
+  return {
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    canonical: `${baseUrl()}${path}`,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      url: `${baseUrl()}/`,
+    },
+  };
 }
 
 export function archiveMeta(path: string): PageMeta {
@@ -45,17 +70,24 @@ export function archiveMeta(path: string): PageMeta {
 }
 
 export function postMeta(post: PostDetail, path: string): PageMeta {
+  const canonical = `${baseUrl()}${path}`;
   return {
     title: `${post.title} · ${SITE_NAME}`,
     description: post.excerpt,
-    canonical: `${baseUrl()}${path}`,
+    canonical,
     ogType: "article",
+    publishedTime: post.date,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: post.title,
+      description: post.excerpt,
+      url: canonical,
+      mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+      image: ogImageUrl(),
       datePublished: post.date,
-      author: { "@type": "Person", name: GITHUB_HANDLE },
+      dateModified: post.date,
+      author: { "@type": "Person", name: GITHUB_HANDLE, url: `https://github.com/${GITHUB_HANDLE}` },
     },
   };
 }

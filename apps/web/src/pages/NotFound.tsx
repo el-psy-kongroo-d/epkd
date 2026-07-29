@@ -1,6 +1,10 @@
+import { SITE_NAME } from "@epkd/shared";
 import { Link } from "react-router-dom";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 export function NotFound() {
+  useDocumentMeta(`404 · ${SITE_NAME}`);
+
   return (
     <section className="section">
       <div className="section-head">

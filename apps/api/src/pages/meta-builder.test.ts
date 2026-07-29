@@ -9,6 +9,7 @@ const post: PostDetail = {
   date: "2026-07-01",
   readingMinutes: 2,
   excerpt: "a story about & friendship",
+  views: 0,
   html: "<p>body</p>",
 };
 
@@ -20,7 +21,7 @@ describe("meta-builder", () => {
   it("renderHead escapes & < > \" ' in title/description/canonical", () => {
     const head = renderHead(postMeta(post, "/posts/tom-and-jerry"));
     expect(head).toContain("Tom &amp; Jerry &lt;3 &quot;quotes&quot; &#39;n stuff");
-    expect(head).toContain('<title>Tom &amp; Jerry &lt;3 &quot;quotes&quot; &#39;n stuff · epkd</title>');
+    expect(head).toContain("<title>Tom &amp; Jerry &lt;3 &quot;quotes&quot; &#39;n stuff · epkd</title>");
     expect(head).toContain('<meta name="description" content="a story about &amp; friendship">');
   });
 
@@ -36,20 +37,25 @@ describe("meta-builder", () => {
     const head = renderHead(postMeta(post, "/posts/tom-and-jerry"));
     expect(head).toContain('<meta property="og:type" content="article">');
     expect(head).toContain('<link rel="canonical" href="https://epkd.example/posts/tom-and-jerry">');
-    expect(head).toContain('<meta name="twitter:card" content="summary">');
+    expect(head).toContain('<meta name="twitter:card" content="summary_large_image">');
+    expect(head).toContain('<meta property="og:image" content="https://epkd.example/og.png">');
+    expect(head).toContain('<meta property="article:published_time" content="2026-07-01">');
     const jsonLdMatch = head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
     expect(jsonLdMatch).not.toBeNull();
     const jsonLd = JSON.parse(jsonLdMatch![1]);
     expect(jsonLd["@type"]).toBe("BlogPosting");
     expect(jsonLd.datePublished).toBe("2026-07-01");
-    expect(jsonLd.author).toEqual({ "@type": "Person", name: expect.any(String) });
+    expect(jsonLd.url).toBe("https://epkd.example/posts/tom-and-jerry");
+    expect(jsonLd.author).toEqual({ "@type": "Person", name: expect.any(String), url: expect.any(String) });
   });
 
-  it("siteMeta/archiveMeta use website og:type by default (no jsonLd)", () => {
+  it("siteMeta uses website og:type and WebSite JSON-LD; archiveMeta has no jsonLd", () => {
     const head = renderHead(siteMeta("/"));
     expect(head).toContain('<meta property="og:type" content="website">');
-    expect(head).not.toContain("application/ld+json");
-    expect(renderHead(archiveMeta("/archive"))).toContain("Archive");
+    expect(head).toContain('"@type":"WebSite"');
+    const archive = renderHead(archiveMeta("/archive"));
+    expect(archive).toContain("Archive");
+    expect(archive).not.toContain("application/ld+json");
   });
 
   it("notFoundMeta produces '404 · epkd' title", () => {

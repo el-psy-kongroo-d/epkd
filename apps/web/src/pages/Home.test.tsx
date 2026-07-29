@@ -4,7 +4,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Home } from "./Home";
 
 const meta = (no: number, slug: string, title: string) => ({
-  no, slug, title, date: "2026-07-27", readingMinutes: 4, excerpt: `excerpt of ${slug}`,
+  no,
+  slug,
+  title,
+  date: "2026-07-27",
+  readingMinutes: 4,
+  excerpt: `excerpt of ${slug}`,
 });
 
 describe("Home", () => {
