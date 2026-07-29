@@ -1,17 +1,24 @@
-export enum ErrorCode {
-  POST_NOT_FOUND = "POST_NOT_FOUND",
-  POST_ALREADY_EXISTS = "POST_ALREADY_EXISTS",
-  COMMENT_NOT_FOUND = "COMMENT_NOT_FOUND",
-  FORBIDDEN = "FORBIDDEN",
-  NOT_FOUND = "NOT_FOUND",
-  VALIDATION_FAILED = "VALIDATION_FAILED",
-  UNAUTHORIZED = "UNAUTHORIZED",
-  RATE_LIMITED = "RATE_LIMITED",
-  INTERNAL = "INTERNAL",
-}
+export const ErrorCode = {
+  POST_NOT_FOUND: "POST_NOT_FOUND",
+  POST_ALREADY_EXISTS: "POST_ALREADY_EXISTS",
+  COMMENT_NOT_FOUND: "COMMENT_NOT_FOUND",
+  FORBIDDEN: "FORBIDDEN",
+  NOT_FOUND: "NOT_FOUND",
+  VALIDATION_FAILED: "VALIDATION_FAILED",
+  PAYLOAD_TOO_LARGE: "PAYLOAD_TOO_LARGE",
+  UNAUTHORIZED: "UNAUTHORIZED",
+  RATE_LIMITED: "RATE_LIMITED",
+  INTERNAL: "INTERNAL",
+} as const;
 
-export interface ApiSuccess<T> { data: T }
-export interface ApiError { error: { code: ErrorCode; message: string } }
+export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+
+export interface ApiSuccess<T> {
+  data: T;
+}
+export interface ApiError {
+  error: { code: ErrorCode; message: string };
+}
 export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 
 export const ok = <T>(data: T): ApiSuccess<T> => ({ data });
