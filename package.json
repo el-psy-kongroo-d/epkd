@@ -2,12 +2,22 @@
   "name": "epkd",
   "private": true,
   "packageManager": "pnpm@9.15.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "dev": "concurrently -k \"pnpm --filter @epkd/api dev\" \"pnpm --filter @epkd/web dev\"",
-    "post:publish": "node scripts/publish-post.mjs"
+    "dev": "pnpm --filter @epkd/shared build && concurrently -k \"pnpm --filter @epkd/api dev\" \"pnpm --filter @epkd/web dev\"",
+    "blog": "node scripts/blog.mjs",
+    "types:supabase": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > apps/api/src/supabase/database.types.ts",
+    "lint": "node scripts/lint.mjs",
+    "lint:fix": "node scripts/lint.mjs --write"
   },
-  "devDependencies": { "concurrently": "^9.1.0", "gray-matter": "^4.0.3" }
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.6",
+    "concurrently": "^9.1.0",
+    "gray-matter": "^4.0.3"
+  }
 }
