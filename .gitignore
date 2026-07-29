@@ -2,10 +2,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 .env
+.env.*
+!.env.example
 coverage/
 .superpowers/
 .idea/
 supabase/.temp/
 .gstack/
-docs/
-mockup/

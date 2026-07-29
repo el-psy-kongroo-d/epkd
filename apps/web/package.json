@@ -2,9 +2,15 @@
   "name": "@epkd/web",
   "version": "0.0.0",
   "private": true,
-  "scripts": { "build": "tsc -b && vite build", "dev": "vite", "test": "vitest run" },
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
   "dependencies": {
     "@epkd/shared": "workspace:*",
+    "@sentry/react": "^10.68.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^7.1.0"
