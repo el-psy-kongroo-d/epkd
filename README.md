@@ -78,3 +78,8 @@ pnpm build
 pnpm typecheck
 pnpm test
 ```
+
+CI additionally runs `pnpm audit --audit-level high --prod`, scoped to the dependencies that
+actually reach the deployed server. One advisory is ignored in `pnpm.auditConfig`:
+GHSA-qwww-vcr4-c8h2 affects React Router's RSC mode, which this app does not use — the only
+patched release requires React 19, and the upgrade is tracked separately.
