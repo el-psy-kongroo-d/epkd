@@ -150,6 +150,7 @@ export function Comments({ slug }: { slug: string }) {
       )}
 
       <form className="comment-form" onSubmit={handleSubmit}>
+        <div className="comment-form-head">leave a comment</div>
         <div className="comment-form-row">
           <label className="sr-only" htmlFor="comment-nickname">
             nickname

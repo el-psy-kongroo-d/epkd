@@ -28,8 +28,9 @@ export function Layout() {
           © {COPYRIGHT_YEAR} · written by <a href={GITHUB_URL}>@{GITHUB_HANDLE}</a>
         </span>
         <span className="footer-right">
-          <VisitCounter />
           <a href="/rss.xml">rss</a>
+          <span>·</span>
+          <VisitCounter />
         </span>
       </footer>
     </div>
