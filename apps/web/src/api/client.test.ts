@@ -93,8 +93,8 @@ describe("apiGet SWR 캐시", () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [] }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await apiGet("/api/posts/steins-gate/comments");
-    await apiGet("/api/posts/steins-gate/comments");
+    await apiGet("/api/posts/first-contribution/comments");
+    await apiGet("/api/posts/first-contribution/comments");
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

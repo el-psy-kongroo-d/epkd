@@ -1,7 +1,7 @@
 import type { PostMeta } from "@epkd/shared";
-import { SITE_NAME } from "@epkd/shared";
+import { SITE_NAME, SITE_TAGLINE } from "@epkd/shared";
 import { Link } from "react-router-dom";
-import { DivergenceMeter } from "../components/DivergenceMeter";
+import { NixieReadout } from "../components/NixieReadout";
 import { OssTicker } from "../components/OssTicker";
 import { SectionHead } from "../components/SectionHead";
 import { EntriesSkeleton } from "../components/Skeleton";
@@ -17,11 +17,8 @@ export function Home() {
   return (
     <>
       <section className="intro">
-        <p>
-          engineering notes from a one-person future gadget lab — build logs, experiments, and whatever survives the
-          worldline shift.
-        </p>
-        <DivergenceMeter />
+        <p>{SITE_TAGLINE}</p>
+        <NixieReadout />
       </section>
       <section className="section">
         <SectionHead

@@ -203,7 +203,7 @@ button:focus-visible {
   color: var(--text-soft);
 }
 
-.divergence {
+.readout {
   font-family: "Courier New", monospace;
   font-size: 18px;
   letter-spacing: 2px;
@@ -638,12 +638,21 @@ a.aside:hover {
 }
 
 .comment-form {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--hairline);
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 3px double var(--hairline);
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.comment-form-head {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
 }
 
 .comment-form-row {
@@ -723,11 +732,45 @@ a.aside:hover {
 
 .footer-right {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
 }
 
 .visit-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.visit-label {
   color: var(--muted);
+}
+
+.tubes {
+  display: inline-flex;
+  padding: 1px 3px;
+  background: #100f0d;
+  border: 1px solid var(--hairline);
+}
+
+.tube {
+  min-width: 10px;
+  padding: 0 2px;
+  text-align: center;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #d8913f;
+  text-shadow: 0 0 5px rgba(255, 161, 66, 0.35);
+}
+
+.tube + .tube {
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tube.rolling {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(255, 161, 66, 0.7);
 }
 
 .footer a {

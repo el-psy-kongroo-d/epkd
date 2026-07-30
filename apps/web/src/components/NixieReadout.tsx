@@ -10,7 +10,7 @@ function randomReading(): string {
   return out;
 }
 
-export function DivergenceMeter() {
+export function NixieReadout() {
   const [value, setValue] = useState(FINAL);
   const timer = useRef<number | null>(null);
 
@@ -38,7 +38,7 @@ export function DivergenceMeter() {
   }, []);
 
   return (
-    <span className="divergence" aria-hidden="true" onMouseEnter={scramble}>
+    <span className="readout" aria-hidden="true" onMouseEnter={scramble}>
       {value}
     </span>
   );

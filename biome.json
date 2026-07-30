@@ -90,7 +90,7 @@
       }
     },
     {
-      "includes": ["apps/web/src/components/DivergenceMeter.tsx"],
+      "includes": ["apps/web/src/components/NixieReadout.tsx"],
       "linter": {
         "rules": {
           "correctness": {
