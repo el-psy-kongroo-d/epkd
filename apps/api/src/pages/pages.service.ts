@@ -1,9 +1,18 @@
 import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { Injectable } from "@nestjs/common";
 import { resolveWebDistIndex } from "./web-dist";
 
 const HEAD_MARKER = "<!--head-->";
 const APP_MARKER = "<!--app-->";
+const STYLESHEET_TAG = /<link rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g;
+
+function inlineStylesheets(html: string, distDir: string): string {
+  return html.replace(STYLESHEET_TAG, (tag, href: string) => {
+    const cssPath = path.join(distDir, href.replace(/^\//, ""));
+    return existsSync(cssPath) ? `<style>${readFileSync(cssPath, "utf8")}</style>` : tag;
+  });
+}
 
 @Injectable()
 export class PagesService {
@@ -11,7 +20,9 @@ export class PagesService {
 
   constructor() {
     const indexPath = resolveWebDistIndex();
-    this.html = existsSync(indexPath) ? readFileSync(indexPath, "utf8") : null;
+    this.html = existsSync(indexPath)
+      ? inlineStylesheets(readFileSync(indexPath, "utf8"), path.dirname(indexPath))
+      : null;
   }
 
   get available(): boolean {
