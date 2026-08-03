@@ -487,6 +487,32 @@ a.aside:hover {
   color: inherit;
 }
 
+.post-body table {
+  margin: 20px 0;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.post-body th {
+  color: var(--navy);
+  text-align: left;
+  padding: 7px 14px;
+  border-bottom: 2px solid var(--accent);
+
+  box-shadow: 0 10px 10px -9px rgba(255, 161, 66, 0.55);
+}
+
+.post-body td {
+  padding: 9px 14px;
+  border-bottom: 1px dotted var(--hairline);
+  vertical-align: baseline;
+}
+
+.post-body th:first-child,
+.post-body td:first-child {
+  padding-left: 8px;
+}
+
 .pager {
   margin-top: 40px;
   padding-top: 10px;
