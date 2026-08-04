@@ -10,7 +10,7 @@ describe("OssTicker", () => {
     cleanup();
   });
 
-  it("repos를 owner/repo(+N)로 두 번(seamless loop) 렌더링한다", async () => {
+  it("renders repos as owner/repo(+N) twice (seamless loop)", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
         data: { repos: [{ fullName: "nestjs/nest", url: "https://github.com/nestjs/nest", prCount: 3 }] },
@@ -27,7 +27,7 @@ describe("OssTicker", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/oss");
   });
 
-  it("repos가 비어있으면 아무것도 렌더링하지 않는다", async () => {
+  it("renders nothing when repos is empty", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: { repos: [] } }));
     vi.stubGlobal("fetch", fetchMock);
 

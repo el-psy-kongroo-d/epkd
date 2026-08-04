@@ -25,7 +25,7 @@ describe("GET /rss.xml", () => {
   });
   afterAll(async () => app.close());
 
-  it("RSS 2.0 XML + 특수문자 이스케이프 + 엔벨로프 미적용", async () => {
+  it("RSS 2.0 XML + special character escaping + no envelope applied", async () => {
     const res = await request(app.getHttpServer()).get("/rss.xml").expect(200);
     expect(res.headers["content-type"]).toContain("application/rss+xml");
     expect(res.text).toContain('<rss version="2.0">');

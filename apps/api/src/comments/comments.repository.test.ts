@@ -20,7 +20,7 @@ function fakeSupabaseServiceReturning(error: { message: string } | null, data: u
   return { client: builder } as never;
 }
 
-describe("CommentsRepository — Supabase 에러 처리", () => {
+describe("CommentsRepository — Supabase error handling", () => {
   let loggerSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
@@ -31,7 +31,7 @@ describe("CommentsRepository — Supabase 에러 처리", () => {
     loggerSpy.mockRestore();
   });
 
-  it("listBySlug: Supabase 원문 에러 대신 고정 'internal error' 메시지를 던진다", async () => {
+  it("listBySlug: throws a fixed 'internal error' message instead of the raw Supabase error", async () => {
     const repo = new CommentsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
     await expect(repo.listBySlug("hello-world")).rejects.toMatchObject({
       code: ErrorCode.INTERNAL,
@@ -40,7 +40,7 @@ describe("CommentsRepository — Supabase 에러 처리", () => {
     });
   });
 
-  it("insert: 원문 에러는 응답에 노출되지 않고 서버 로그에만 남는다", async () => {
+  it("insert: raw error is not exposed in the response, only logged on the server", async () => {
     const repo = new CommentsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
     await expect(
       repo.insert({ post_slug: "hello-world", nickname: "n", password_hash: "h", body: "b" }),
@@ -51,7 +51,7 @@ describe("CommentsRepository — Supabase 에러 처리", () => {
     expect(logged).toContain(RAW_DB_ERROR);
   });
 
-  it("findById: 원문 에러 노출 없이 고정 메시지", async () => {
+  it("findById: fixed message without exposing the raw error", async () => {
     const repo = new CommentsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
     await expect(repo.findById(1)).rejects.toMatchObject({
       code: ErrorCode.INTERNAL,
@@ -60,7 +60,7 @@ describe("CommentsRepository — Supabase 에러 처리", () => {
     });
   });
 
-  it("deleteById: 원문 에러 노출 없이 고정 메시지", async () => {
+  it("deleteById: fixed message without exposing the raw error", async () => {
     const repo = new CommentsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
     await expect(repo.deleteById(1)).rejects.toMatchObject({
       code: ErrorCode.INTERNAL,
@@ -69,7 +69,7 @@ describe("CommentsRepository — Supabase 에러 처리", () => {
     });
   });
 
-  it("에러 없음 → 정상적으로 데이터 반환", async () => {
+  it("no error → returns data normally", async () => {
     const row = { id: 1, post_slug: "hello-world", nickname: "n", password_hash: "h", body: "b", created_at: "now" };
     const repo = new CommentsRepository(fakeSupabaseServiceReturning(null, [row]));
     await expect(repo.listBySlug("hello-world")).resolves.toEqual([row]);

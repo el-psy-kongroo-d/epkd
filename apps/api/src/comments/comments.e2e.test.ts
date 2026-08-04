@@ -57,7 +57,7 @@ describe("Comments API", () => {
   });
   afterAll(async () => app.close());
 
-  it("작성 후 목록에 오래된 순으로 노출", async () => {
+  it("lists comments oldest-first after creation", async () => {
     await request(app.getHttpServer())
       .post("/api/posts/hello-world/comments")
       .send({ nickname: "first", password: "pass1234", body: "first!" })
@@ -73,7 +73,7 @@ describe("Comments API", () => {
     expect(res.body.data[0]).not.toHaveProperty("passwordHash");
   });
 
-  it("존재하지 않는 글 slug → 404 POST_NOT_FOUND", async () => {
+  it("nonexistent post slug → 404 POST_NOT_FOUND", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/posts/ghost-slug/comments")
       .send({ nickname: "a", password: "pass1234", body: "hi" })
@@ -81,7 +81,7 @@ describe("Comments API", () => {
     expect(res.body.error.code).toBe("POST_NOT_FOUND");
   });
 
-  it("허니팟(website) 채움 → 200대 가짜 성공이지만 저장 안 됨", async () => {
+  it("honeypot (website) filled → 2xx fake success but nothing saved", async () => {
     const before = (await request(app.getHttpServer()).get("/api/posts/hello-world/comments").expect(200)).body.data
       .length;
 
@@ -96,7 +96,7 @@ describe("Comments API", () => {
     expect(after).toBe(before);
   });
 
-  it("25자 닉네임 → 400 VALIDATION_FAILED", async () => {
+  it("25-char nickname → 400 VALIDATION_FAILED", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/posts/hello-world/comments")
       .send({ nickname: "a".repeat(25), password: "pass1234", body: "hi" })
@@ -104,7 +104,7 @@ describe("Comments API", () => {
     expect(res.body.error.code).toBe("VALIDATION_FAILED");
   });
 
-  it("잘못된 비밀번호로 삭제 시도 → 403 FORBIDDEN", async () => {
+  it("delete attempt with a wrong password → 403 FORBIDDEN", async () => {
     const created = await request(app.getHttpServer())
       .post("/api/posts/hello-world/comments")
       .send({ nickname: "victim", password: "correct-pw", body: "delete me" })
@@ -117,7 +117,7 @@ describe("Comments API", () => {
     expect(res.body.error.code).toBe("FORBIDDEN");
   });
 
-  it("관리자 Bearer 토큰 → 비밀번호 없이 삭제 성공", async () => {
+  it("admin Bearer token → deletion succeeds without a password", async () => {
     const created = await request(app.getHttpServer())
       .post("/api/posts/hello-world/comments")
       .send({ nickname: "admin-target", password: "correct-pw", body: "delete me too" })
@@ -132,7 +132,7 @@ describe("Comments API", () => {
     expect(await repo.findById(created.body.data.id)).toBeNull();
   });
 
-  it("존재하지 않는 댓글 삭제 → 404 COMMENT_NOT_FOUND", async () => {
+  it("deleting a nonexistent comment → 404 COMMENT_NOT_FOUND", async () => {
     const res = await request(app.getHttpServer())
       .delete("/api/comments/999999")
       .send({ password: "whatever" })

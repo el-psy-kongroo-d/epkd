@@ -8,20 +8,20 @@ const valid = {
 };
 
 describe("validateEnv", () => {
-  it("필수 값이 모두 있으면 통과하고 기본값을 채운다", () => {
+  it("passes when all required values are present and fills in defaults", () => {
     const result = validateEnv(valid);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.BASE_URL).toBe("http://localhost:5173");
   });
 
-  it("SUPABASE_URL 누락 시 해당 이슈를 보고한다", () => {
+  it("reports the issue when SUPABASE_URL is missing", () => {
     const { SUPABASE_URL: _omit, ...rest } = valid;
     const result = validateEnv(rest);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.issues.join()).toContain("SUPABASE_URL");
   });
 
-  it("짧은 PUBLISH_TOKEN 거부", () => {
+  it("rejects a short PUBLISH_TOKEN", () => {
     const result = validateEnv({ ...valid, PUBLISH_TOKEN: "short" });
     expect(result.ok).toBe(false);
   });

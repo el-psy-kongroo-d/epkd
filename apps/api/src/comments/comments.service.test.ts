@@ -53,7 +53,7 @@ describe("CommentsService", () => {
     vi.useRealTimers();
   });
 
-  it("작성 후 목록에 오래된 순으로 노출", async () => {
+  it("lists comments oldest-first after creation", async () => {
     await service.create("hello-world", { nickname: "a", password: "pass1", body: "first" });
     await service.create("hello-world", { nickname: "b", password: "pass2", body: "second" });
 
@@ -62,7 +62,7 @@ describe("CommentsService", () => {
     expect(list[0].postSlug).toBe("hello-world");
   });
 
-  it("존재하지 않는 slug → POST_NOT_FOUND 404", async () => {
+  it("nonexistent slug → POST_NOT_FOUND 404", async () => {
     posts.missingSlugs.add("ghost");
     await expect(service.create("ghost", { nickname: "a", password: "pass1", body: "hi" })).rejects.toMatchObject({
       code: ErrorCode.POST_NOT_FOUND,
@@ -70,7 +70,7 @@ describe("CommentsService", () => {
     });
   });
 
-  it("허니팟(website) 채워짐 → 가짜 성공, 저장 안 됨 (응답은 무작위 지연 후)", async () => {
+  it("honeypot (website) filled → fake success, nothing saved (response after a random delay)", async () => {
     vi.useFakeTimers();
     try {
       const pending = service.create("hello-world", {
@@ -91,20 +91,20 @@ describe("CommentsService", () => {
     }
   });
 
-  it("25자 닉네임 → 400 VALIDATION_FAILED", async () => {
+  it("25-char nickname → 400 VALIDATION_FAILED", async () => {
     await expect(
       service.create("hello-world", { nickname: "a".repeat(25), password: "pass1", body: "hi" }),
     ).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED, status: 400 });
   });
 
-  it("존재하지 않는 댓글 삭제 → COMMENT_NOT_FOUND 404", async () => {
+  it("deleting a nonexistent comment → COMMENT_NOT_FOUND 404", async () => {
     await expect(service.remove("999", { password: "pass1" }, undefined)).rejects.toMatchObject({
       code: ErrorCode.COMMENT_NOT_FOUND,
       status: 404,
     });
   });
 
-  it("잘못된 비밀번호 → 403 FORBIDDEN", async () => {
+  it("wrong password → 403 FORBIDDEN", async () => {
     const created = await service.create("hello-world", { nickname: "a", password: "correct-pw", body: "hi" });
     await expect(service.remove(String(created.id), { password: "wrong-pw" }, undefined)).rejects.toMatchObject({
       code: ErrorCode.FORBIDDEN,
@@ -112,20 +112,20 @@ describe("CommentsService", () => {
     });
   });
 
-  it("올바른 비밀번호 → 삭제 성공", async () => {
+  it("correct password → deletion succeeds", async () => {
     const created = await service.create("hello-world", { nickname: "a", password: "correct-pw", body: "hi" });
     await service.remove(String(created.id), { password: "correct-pw" }, undefined);
     expect(await repo.findById(created.id)).toBeNull();
   });
 
-  it("관리자 Bearer 토큰 → 비밀번호 없이 삭제 성공", async () => {
+  it("admin Bearer token → deletion succeeds without a password", async () => {
     process.env.PUBLISH_TOKEN = "admin-secret";
     const created = await service.create("hello-world", { nickname: "a", password: "correct-pw", body: "hi" });
     await service.remove(String(created.id), {}, "Bearer admin-secret");
     expect(await repo.findById(created.id)).toBeNull();
   });
 
-  it("password_hash는 bcrypt 해시로 저장된다", async () => {
+  it("stores password_hash as a bcrypt hash", async () => {
     const created = await service.create("hello-world", { nickname: "a", password: "correct-pw", body: "hi" });
     const row = await repo.findById(created.id);
     expect(row?.password_hash).not.toBe("correct-pw");

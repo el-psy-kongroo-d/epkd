@@ -12,7 +12,7 @@ describe("ErrorBoundary", () => {
     cleanup();
   });
 
-  it("자식이 던지면 폴백을 렌더링한다", () => {
+  it("renders the fallback when a child throws", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     render(
       <ErrorBoundary>
@@ -23,7 +23,7 @@ describe("ErrorBoundary", () => {
     expect(screen.getByRole("link", { name: "go home" }).getAttribute("href")).toBe("/");
   });
 
-  it("정상 자식은 그대로 렌더링한다", () => {
+  it("renders healthy children as-is", () => {
     render(
       <ErrorBoundary>
         <span>fine</span>

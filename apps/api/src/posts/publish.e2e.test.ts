@@ -28,12 +28,12 @@ describe("POST/DELETE /api/posts", () => {
   });
   afterAll(async () => app.close());
 
-  it("토큰 없음 → 401 UNAUTHORIZED", async () => {
+  it("no token → 401 UNAUTHORIZED", async () => {
     const res = await request(app.getHttpServer()).post("/api/posts").send(dto).expect(401);
     expect(res.body.error.code).toBe("UNAUTHORIZED");
   });
 
-  it("유효 토큰 → 201 + 메타 반환, 이후 목록에 노출", async () => {
+  it("valid token → 201 + meta returned, then appears in the list", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/posts")
       .set("Authorization", "Bearer test-token")
@@ -44,7 +44,7 @@ describe("POST/DELETE /api/posts", () => {
     expect(list.body.data.map((p: { slug: string }) => p.slug)).toContain("new-entry");
   });
 
-  it("같은 slug로 재발행 → upsert로 내용이 갱신된다 (더 이상 409가 아님)", async () => {
+  it("republishing the same slug → content is updated via upsert (no longer 409)", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/posts")
       .set("Authorization", "Bearer test-token")
@@ -56,7 +56,7 @@ describe("POST/DELETE /api/posts", () => {
     expect(detail.body.data.html).toContain("hi again");
   });
 
-  it("무효 페이로드(경로조작 slug) → 400 VALIDATION_FAILED", async () => {
+  it("invalid payload (path-traversal slug) → 400 VALIDATION_FAILED", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/posts")
       .set("Authorization", "Bearer test-token")
@@ -65,7 +65,7 @@ describe("POST/DELETE /api/posts", () => {
     expect(res.body.error.code).toBe("VALIDATION_FAILED");
   });
 
-  it("draft: true → 400 VALIDATION_FAILED, 저장되지 않는다 (CLI가 거르지만 서버도 이중 확인)", async () => {
+  it("draft: true → 400 VALIDATION_FAILED, not saved (the CLI filters it, but the server double-checks)", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/posts")
       .set("Authorization", "Bearer test-token")
@@ -77,11 +77,11 @@ describe("POST/DELETE /api/posts", () => {
     expect(list.body.data.map((p: { slug: string }) => p.slug)).not.toContain("should-not-exist");
   });
 
-  it("DELETE 토큰 없음 → 401 UNAUTHORIZED", async () => {
+  it("DELETE without a token → 401 UNAUTHORIZED", async () => {
     await request(app.getHttpServer()).delete("/api/posts/new-entry").expect(401);
   });
 
-  it("DELETE 미존재 slug → 404 POST_NOT_FOUND", async () => {
+  it("DELETE on a nonexistent slug → 404 POST_NOT_FOUND", async () => {
     const res = await request(app.getHttpServer())
       .delete("/api/posts/ghost-slug")
       .set("Authorization", "Bearer test-token")
@@ -89,7 +89,7 @@ describe("POST/DELETE /api/posts", () => {
     expect(res.body.error.code).toBe("POST_NOT_FOUND");
   });
 
-  it("DELETE 유효 토큰 → 204, 이후 목록에서 사라진다", async () => {
+  it("DELETE with a valid token → 204, then disappears from the list", async () => {
     await request(app.getHttpServer())
       .delete("/api/posts/new-entry")
       .set("Authorization", "Bearer test-token")
