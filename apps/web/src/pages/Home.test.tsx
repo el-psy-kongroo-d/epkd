@@ -15,7 +15,7 @@ const meta = (no: number, slug: string, title: string) => ({
 describe("Home", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("최신 5개만 렌더링", async () => {
+  it("renders only the latest 5", async () => {
     const posts = [6, 5, 4, 3, 2, 1].map((n) => meta(n, `post-${n}`, `Post ${n}`));
     vi.stubGlobal(
       "fetch",

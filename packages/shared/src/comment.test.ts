@@ -1,62 +1,62 @@
 import { describe, expect, it } from "vitest";
 import { CommentSchema, CreateCommentSchema, DeleteCommentSchema } from "./comment";
 
-describe("CreateCommentSchema — 허니팟(website)", () => {
+describe("CreateCommentSchema — honeypot (website)", () => {
   const base = { nickname: "n", password: "pass", body: "b" };
 
-  it("website에 값이 있으면 거부", () => {
+  it("rejects when website has a value", () => {
     expect(CreateCommentSchema.safeParse({ ...base, website: "http://spam" }).success).toBe(false);
   });
 
-  it("website가 빈 문자열이면 통과", () => {
+  it("passes when website is an empty string", () => {
     expect(CreateCommentSchema.safeParse({ ...base, website: "" }).success).toBe(true);
   });
 
-  it("website가 없으면 통과", () => {
+  it("passes when website is absent", () => {
     expect(CreateCommentSchema.safeParse({ ...base }).success).toBe(true);
   });
 });
 
-describe("CreateCommentSchema — 필드 검증", () => {
+describe("CreateCommentSchema — field validation", () => {
   const base = { nickname: "n", password: "pass", body: "b" };
 
-  it("닉네임 25자 거부", () => {
+  it("rejects 25-char nickname", () => {
     expect(CreateCommentSchema.safeParse({ ...base, nickname: "a".repeat(25) }).success).toBe(false);
   });
 
-  it("닉네임 24자 통과", () => {
+  it("accepts 24-char nickname", () => {
     expect(CreateCommentSchema.safeParse({ ...base, nickname: "a".repeat(24) }).success).toBe(true);
   });
 
-  it("본문 1001자 거부", () => {
+  it("rejects 1001-char body", () => {
     expect(CreateCommentSchema.safeParse({ ...base, body: "a".repeat(1001) }).success).toBe(false);
   });
 
-  it("본문 1000자 통과", () => {
+  it("accepts 1000-char body", () => {
     expect(CreateCommentSchema.safeParse({ ...base, body: "a".repeat(1000) }).success).toBe(true);
   });
 
-  it("비밀번호 3자 거부", () => {
+  it("rejects 3-char password", () => {
     expect(CreateCommentSchema.safeParse({ ...base, password: "abc" }).success).toBe(false);
   });
 
-  it("정상 payload 통과", () => {
+  it("accepts a valid payload", () => {
     const valid = { nickname: "nick", password: "1234", body: "hello" };
     expect(CreateCommentSchema.safeParse(valid).success).toBe(true);
   });
 
-  it("nickname/body 공백 trim 후 검증", () => {
+  it("validates nickname/body after trimming whitespace", () => {
     expect(CreateCommentSchema.safeParse({ ...base, nickname: "   " }).success).toBe(false);
   });
 });
 
 describe("DeleteCommentSchema", () => {
-  it("정상 password 통과", () => expect(DeleteCommentSchema.safeParse({ password: "1234" }).success).toBe(true));
-  it("짧은 password 거부", () => expect(DeleteCommentSchema.safeParse({ password: "123" }).success).toBe(false));
+  it("accepts a valid password", () => expect(DeleteCommentSchema.safeParse({ password: "1234" }).success).toBe(true));
+  it("rejects a short password", () => expect(DeleteCommentSchema.safeParse({ password: "123" }).success).toBe(false));
 });
 
 describe("CommentSchema — roundtrip", () => {
-  it("유효 댓글 통과", () => {
+  it("accepts a valid comment", () => {
     const valid = {
       id: 1,
       postSlug: "hello-world",
@@ -67,7 +67,7 @@ describe("CommentSchema — roundtrip", () => {
     expect(CommentSchema.parse(valid)).toEqual(valid);
   });
 
-  it("postSlug 형식 위반 거부", () => {
+  it("rejects a postSlug format violation", () => {
     const invalid = {
       id: 1,
       postSlug: "UPPER_CASE",

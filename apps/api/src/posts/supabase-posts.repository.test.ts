@@ -41,7 +41,7 @@ describe("SupabasePostsRepository", () => {
   });
 
   describe("loadAll", () => {
-    it("행을 매핑하고 date asc + no 1-based로 정렬한다", async () => {
+    it("maps rows and sorts by date asc with 1-based no", async () => {
       const rows = [row("newer", "Newer", "2026-07-27", "hello world"), row("older", "Older", "2026-07-01", "hi")];
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning(null, rows));
       const posts = await repo.loadAll();
@@ -52,7 +52,7 @@ describe("SupabasePostsRepository", () => {
       expect(posts[0]).not.toHaveProperty("updated_at");
     });
 
-    it("30초 TTL 동안은 재조회 없이 캐시를 재사용한다", async () => {
+    it("reuses the cache without refetching during the 30s TTL", async () => {
       const rows = [row("a", "A", "2026-07-01", "x")];
       const client = fakeSupabaseServiceReturning(null, rows);
       const fromSpy = vi.spyOn(client.client as unknown as { from: () => unknown }, "from");
@@ -72,7 +72,7 @@ describe("SupabasePostsRepository", () => {
       expect(fromSpy).toHaveBeenCalledTimes(2);
     });
 
-    it("Supabase 에러 → 원문 노출 없이 'internal error'", async () => {
+    it("Supabase error → 'internal error' without exposing the raw message", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
       await expect(repo.loadAll()).rejects.toMatchObject({
         code: ErrorCode.INTERNAL,
@@ -83,7 +83,7 @@ describe("SupabasePostsRepository", () => {
       expect(loggerSpy.mock.calls.map((c) => String(c[0])).join("\n")).toContain(RAW_DB_ERROR);
     });
 
-    it("in-flight 조회 중 invalidate(upsert)가 발생하면 그 결과를 캐시하지 않는다 — 다음 호출은 재조회", async () => {
+    it("does not cache the result if invalidate (upsert) happens during an in-flight fetch — the next call refetches", async () => {
       let resolveSelect: (v: { data: unknown; error: null }) => void = () => {};
       let selectCalls = 0;
       const builder = {
@@ -113,7 +113,7 @@ describe("SupabasePostsRepository", () => {
       expect(second.map((p) => p.slug)).toEqual(["b"]);
     });
 
-    it("동시에 여러 loadAll 호출 → 실제 조회(select)는 한 번만 실행되고 동일 결과를 공유한다", async () => {
+    it("concurrent loadAll calls → the actual select runs only once and the same result is shared", async () => {
       let resolveSelect: (v: { data: unknown; error: null }) => void = () => {};
       let selectCalls = 0;
       const builder = {
@@ -141,7 +141,7 @@ describe("SupabasePostsRepository", () => {
   });
 
   describe("upsert", () => {
-    it("성공 시 캐시를 무효화해 다음 loadAll이 다시 조회하게 한다", async () => {
+    it("invalidates the cache on success so the next loadAll refetches", async () => {
       let call = 0;
       const rows = [[row("a", "A", "2026-07-01", "x")], [row("a", "A2", "2026-07-01", "y")]];
       const builder = {
@@ -164,7 +164,7 @@ describe("SupabasePostsRepository", () => {
       expect(call).toBe(2);
     });
 
-    it("Supabase 에러 → 원문 노출 없이 'internal error'", async () => {
+    it("Supabase error → 'internal error' without exposing the raw message", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
       await expect(repo.upsert({ slug: "a", title: "A", date: "2026-07-01", content: "x" })).rejects.toMatchObject({
         code: ErrorCode.INTERNAL,
@@ -175,17 +175,17 @@ describe("SupabasePostsRepository", () => {
   });
 
   describe("deleteBySlug", () => {
-    it("삭제된 행이 없으면 false", async () => {
+    it("false when no rows were deleted", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning(null, []));
       expect(await repo.deleteBySlug("ghost")).toBe(false);
     });
 
-    it("삭제된 행이 있으면 true", async () => {
+    it("true when rows were deleted", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning(null, [row("a", "A", "2026-07-01", "x")]));
       expect(await repo.deleteBySlug("a")).toBe(true);
     });
 
-    it("Supabase 에러 → 원문 노출 없이 'internal error'", async () => {
+    it("Supabase error → 'internal error' without exposing the raw message", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning({ message: RAW_DB_ERROR }));
       await expect(repo.deleteBySlug("a")).rejects.toMatchObject({
         code: ErrorCode.INTERNAL,
@@ -196,12 +196,12 @@ describe("SupabasePostsRepository", () => {
   });
 
   describe("findBySlug", () => {
-    it("경로조작형 slug는 조회 자체 거부 (loadAll 호출 없이 null)", async () => {
+    it("rejects path-traversal slugs outright (null without calling loadAll)", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning(null, []));
       expect(await repo.findBySlug("../../etc/passwd")).toBeNull();
     });
 
-    it("없으면 null", async () => {
+    it("null when not found", async () => {
       const repo = new SupabasePostsRepository(fakeSupabaseServiceReturning(null, []));
       expect(await repo.findBySlug("nope")).toBeNull();
     });

@@ -23,7 +23,7 @@ function makeService(post: { current: RawPost }) {
 }
 
 describe("PostsService render cache", () => {
-  it("같은 내용이면 렌더러를 한 번만 호출", async () => {
+  it("calls the renderer only once for identical content", async () => {
     const post = { current: raw("a", "hello") };
     const { service, render } = makeService(post);
     const first = await service.get("a");
@@ -32,7 +32,7 @@ describe("PostsService render cache", () => {
     expect(second.html).toBe(first.html);
   });
 
-  it("내용이 바뀌면 다시 렌더링", async () => {
+  it("re-renders when content changes", async () => {
     const post = { current: raw("a", "v1") };
     const { service, render } = makeService(post);
     await service.get("a");
@@ -44,7 +44,7 @@ describe("PostsService render cache", () => {
 });
 
 describe("PostsService.publish", () => {
-  it("repository.upsert 후 findBySlug로 조회한 메타를 반환한다 (POST_ALREADY_EXISTS 없음)", async () => {
+  it("returns the meta fetched via findBySlug after repository.upsert (no POST_ALREADY_EXISTS)", async () => {
     const post = { current: raw("new-entry", "hello") };
     const upsert = vi.fn(async () => undefined);
     const repository = { upsert, findBySlug: async () => post.current } as unknown as PostsRepository;
@@ -61,7 +61,7 @@ describe("PostsService.publish", () => {
 });
 
 describe("PostsService.delete", () => {
-  it("deleteBySlug가 false → 404 POST_NOT_FOUND", async () => {
+  it("deleteBySlug false → 404 POST_NOT_FOUND", async () => {
     const deleteBySlug = vi.fn(async () => false);
     const repository = { deleteBySlug } as unknown as PostsRepository;
     const renderer = {} as unknown as MarkdownRenderer;
@@ -70,7 +70,7 @@ describe("PostsService.delete", () => {
     await expect(service.delete("ghost")).rejects.toMatchObject({ code: "POST_NOT_FOUND", status: 404 });
   });
 
-  it("deleteBySlug가 true → 정상 종료", async () => {
+  it("deleteBySlug true → completes normally", async () => {
     const deleteBySlug = vi.fn(async () => true);
     const repository = { deleteBySlug } as unknown as PostsRepository;
     const renderer = {} as unknown as MarkdownRenderer;

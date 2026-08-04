@@ -9,12 +9,12 @@ describe("apiGet", () => {
     invalidate();
   });
 
-  it("성공 엔벨로프 언래핑", async () => {
+  it("unwraps the success envelope", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ data: [1, 2] })));
     expect(await apiGet<number[]>("/api/posts")).toEqual([1, 2]);
   });
 
-  it("에러 엔벨로프 → ApiClientError(code)", async () => {
+  it("error envelope → ApiClientError(code)", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(jsonResponse({ error: { code: "POST_NOT_FOUND", message: "no" } })),
@@ -23,7 +23,7 @@ describe("apiGet", () => {
     await expect(apiGet("/api/posts/x")).rejects.toBeInstanceOf(ApiClientError);
   });
 
-  it("204 No Content(빈 본문) → 성공(undefined), json() 파싱 시도 안 함", async () => {
+  it("204 No Content (empty body) → success (undefined), no json() parsing attempted", async () => {
     const json = vi.fn().mockRejectedValue(new Error("should not be called on empty body"));
     const res = { status: 204, headers: { get: () => null }, json } as unknown as Response;
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(res));
@@ -32,7 +32,7 @@ describe("apiGet", () => {
     expect(json).not.toHaveBeenCalled();
   });
 
-  it("200인데 non-JSON(파싱 실패) 본문 → ApiClientError(INTERNAL)로 표면화 — 조용히 성공 처리하지 않는다", async () => {
+  it("200 with non-JSON (unparseable) body → surfaced as ApiClientError(INTERNAL) — does not silently succeed", async () => {
     const res = {
       status: 200,
       headers: { get: () => null },
@@ -45,13 +45,13 @@ describe("apiGet", () => {
   });
 });
 
-describe("apiGet SWR 캐시", () => {
+describe("apiGet SWR cache", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     invalidate();
   });
 
-  it("/api/posts는 TTL 내 재요청 시 fetch를 다시 하지 않고 캐시된 값을 즉시 반환한다", async () => {
+  it("/api/posts returns the cached value immediately without refetching within the TTL", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [1, 2] }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -60,7 +60,7 @@ describe("apiGet SWR 캐시", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("/api/posts/:slug도 캐시되지만 서로 다른 slug는 별도 키로 각각 fetch된다", async () => {
+  it("/api/posts/:slug is also cached, but different slugs are fetched separately under distinct keys", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: { slug: "a" } }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -70,7 +70,7 @@ describe("apiGet SWR 캐시", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("revalidate:true는 캐시를 무시하고 강제로 재요청한다", async () => {
+  it("revalidate:true bypasses the cache and forces a refetch", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [1] }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -79,7 +79,7 @@ describe("apiGet SWR 캐시", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("invalidate(path)로 특정 경로만 캐시를 비운다", async () => {
+  it("invalidate(path) clears the cache for a specific path only", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [1] }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -89,7 +89,7 @@ describe("apiGet SWR 캐시", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("댓글 등 /api/posts/:slug/comments 경로는 캐시되지 않고 매번 fetch한다 (post 후 refetch가 항상 최신)", async () => {
+  it("/api/posts/:slug/comments paths (e.g. comments) are not cached and fetch every time (refetch after post is always fresh)", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [] }));
     vi.stubGlobal("fetch", fetchMock);
 

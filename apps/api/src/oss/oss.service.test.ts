@@ -19,7 +19,7 @@ describe("OssService", () => {
     vi.useRealTimers();
   });
 
-  it("search items의 repository_url에서 fullName을 뽑아 PR 수를 집계하고 fullName 순 정렬한다", async () => {
+  it("extracts fullName from search items' repository_url, aggregates PR counts, and sorts by fullName", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(
@@ -42,7 +42,7 @@ describe("OssService", () => {
     ]);
   });
 
-  it("6시간 이내 재호출은 캐시를 반환하고 fetch를 다시 하지 않는다", async () => {
+  it("returns the cache without refetching when called again within 6 hours", async () => {
     vi.useFakeTimers();
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
@@ -56,7 +56,7 @@ describe("OssService", () => {
     expect(second).toEqual(first);
   });
 
-  it("6시간이 지나면 캐시를 다시 채운다", async () => {
+  it("refills the cache after 6 hours", async () => {
     vi.useFakeTimers();
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
@@ -69,19 +69,19 @@ describe("OssService", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("fetch가 예외를 던지고 캐시가 없으면 빈 배열을 반환한다 (500 금지)", async () => {
+  it("returns an empty array when fetch throws and there is no cache (never 500)", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network down"));
 
     await expect(service.getRepos()).resolves.toEqual([]);
   });
 
-  it("non-200(403 rate limit 포함) 응답이고 캐시가 없으면 빈 배열을 반환한다", async () => {
+  it("returns an empty array on non-200 responses (including 403 rate limit) with no cache", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(errorResponse(403));
 
     await expect(service.getRepos()).resolves.toEqual([]);
   });
 
-  it("TTL 만료 후 재요청이 실패하면 스테일 캐시를 반환한다", async () => {
+  it("returns the stale cache when the refetch after TTL expiry fails", async () => {
     vi.useFakeTimers();
     const fetchMock = vi
       .spyOn(globalThis, "fetch")

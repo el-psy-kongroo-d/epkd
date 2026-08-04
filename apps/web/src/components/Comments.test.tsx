@@ -18,7 +18,7 @@ describe("Comments", () => {
     cleanup();
   });
 
-  it("목록을 렌더링한다", async () => {
+  it("renders the list", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [comment(1, "passerby", "nice write-up")] }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -30,7 +30,7 @@ describe("Comments", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/posts/first-contribution/comments");
   });
 
-  it("댓글이 0개 또는 여러 개면 'comments'로 복수형 표기한다", async () => {
+  it("uses plural 'comments' for zero or multiple comments", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [] }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -46,13 +46,13 @@ describe("Comments", () => {
     expect(await screen.findByText("2 comments")).toBeTruthy();
   });
 
-  it("작성 폼에 개인정보 안내 문구를 표시한다", () => {
+  it("shows a privacy notice on the comment form", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ data: [] })));
     render(<Comments slug="first-contribution" />);
     expect(screen.getByText(/the password is kept only as a hash for deletion/i)).toBeTruthy();
   });
 
-  it("작성 폼 submit 시 POST payload(빈 website 포함)를 보내고 성공 후 목록을 재조회한다", async () => {
+  it("sends POST payload (including empty website) on form submit and refetches the list on success", async () => {
     const fetchMock = vi.fn().mockImplementation((_path: string, init?: RequestInit) => {
       if (!init) return Promise.resolve(jsonResponse({ data: [] }));
       return Promise.resolve(
@@ -98,7 +98,7 @@ describe("Comments", () => {
     expect((screen.getByPlaceholderText("nickname") as HTMLInputElement).value).toBe("");
   });
 
-  it("delete를 누르면 인라인 비밀번호 폼이 열리고, confirm 시 DELETE를 보낸다", async () => {
+  it("opens an inline password form on delete click and sends DELETE on confirm", async () => {
     const fetchMock = vi.fn().mockImplementation((_path: string, init?: RequestInit) => {
       if (init?.method === "DELETE") return Promise.resolve(jsonResponse({ data: null }));
       return Promise.resolve(jsonResponse({ data: [comment(1, "passerby", "nice write-up")] }));
@@ -121,7 +121,7 @@ describe("Comments", () => {
     await waitFor(() => expect(screen.queryByLabelText(/password for this comment/i)).toBeNull());
   });
 
-  it("cancel을 누르면 삭제 폼이 닫힌다", async () => {
+  it("closes the delete form on cancel click", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(jsonResponse({ data: [comment(1, "passerby", "nice write-up")] })),

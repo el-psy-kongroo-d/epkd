@@ -28,39 +28,39 @@ describe("Posts API", () => {
   });
   afterAll(async () => app.close());
 
-  it("GET /api/posts → 최신순 메타 엔벨로프", async () => {
+  it("GET /api/posts → newest-first meta envelope", async () => {
     const res = await request(app.getHttpServer()).get("/api/posts").expect(200);
     expect(res.body.data.map((p: { slug: string }) => p.slug)).toEqual(["second", "first"]);
     expect(res.body.data[0]).not.toHaveProperty("content");
   });
 
-  it("GET /api/posts/:slug → 렌더링된 html 포함", async () => {
+  it("GET /api/posts/:slug → includes rendered html", async () => {
     const res = await request(app.getHttpServer()).get("/api/posts/second").expect(200);
     expect(res.body.data.html).toContain("<pre");
   });
 
-  it("미존재 slug → 404 POST_NOT_FOUND", async () => {
+  it("nonexistent slug → 404 POST_NOT_FOUND", async () => {
     const res = await request(app.getHttpServer()).get("/api/posts/ghost").expect(404);
     expect(res.body.error.code).toBe("POST_NOT_FOUND");
   });
 
-  it("불량 slug(대문자) → 404 POST_NOT_FOUND (경로조작 차단)", async () => {
+  it("bad slug (uppercase) → 404 POST_NOT_FOUND (path traversal blocked)", async () => {
     await request(app.getHttpServer()).get("/api/posts/NoPe").expect(404);
   });
 
-  it("POST /api/posts/:slug/view → 204, 조회수 1 증가", async () => {
+  it("POST /api/posts/:slug/view → 204, view count increments by 1", async () => {
     const before = await request(app.getHttpServer()).get("/api/posts/first").expect(200);
     await request(app.getHttpServer()).post("/api/posts/first/view").expect(204);
     const after = await request(app.getHttpServer()).get("/api/posts/first").expect(200);
     expect(after.body.data.views).toBe(before.body.data.views + 1);
   });
 
-  it("미존재 slug의 view → 404, 인증 없이도 카운트 외 부작용 없음", async () => {
+  it("view on a nonexistent slug → 404, no side effects beyond the count even without auth", async () => {
     const res = await request(app.getHttpServer()).post("/api/posts/ghost/view").expect(404);
     expect(res.body.error.code).toBe("POST_NOT_FOUND");
   });
 
-  it("불량 slug의 view → 404 (경로조작 차단)", async () => {
+  it("view on a bad slug → 404 (path traversal blocked)", async () => {
     await request(app.getHttpServer()).post("/api/posts/NoPe/view").expect(404);
   });
 });
